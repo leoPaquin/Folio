@@ -148,3 +148,8 @@ a { text-decoration: none; }
 .chart-latest strong { color: var(--green); font-size: 19px; font-variant-numeric: tabular-nums; }
 .chart-latest span { color: #849084; font-size: 10px; }
 .chart-section .segmented { flex-wrap: wrap; }
+
+.overview-placements-link { margin-top: 28px; padding: 22px 24px; border: 1px solid var(--line); border-radius: 6px; background: #f4f7f2; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.overview-placements-link h2 { margin: 0 0 6px; }
+.overview-placements-link .section-sub { margin: 0; }
+@media(max-width:650px) { .overview-placements-link { align-items: flex-start; flex-direction: column; padding: 18px; } .overview-placements-link .button { width: 100%; justify-content: center; } }
