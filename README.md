@@ -21,7 +21,7 @@ Aucune donnee fictive. Les comptes et placements sont conserves exclusivement da
 
 L'import PDF Disnat controle les totaux de chaque compte et du portefeuille avant validation. Les valeurs comptables et marchandes du releve sont conservees, avec leurs devises. Un nouveau releve remplace les positions des comptes concernes, afin de retirer les positions vendues.
 
-L'import CSV accepte des positions consolidees; les historiques de transactions Exodus ne sont pas pris en charge. Aucun cours de bourse ni taux de change en direct. Les cours proviennent des fichiers ou de la saisie manuelle.
+L'import CSV accepte des positions consolidees; les historiques de transactions Exodus ne sont pas pris en charge. Les actions et FNB peuvent être actualisés à la demande avec Yahoo Finance, et les cryptos avec CoinGecko. Un aperçu permet de vérifier les identifiants, devises et dates avant application. Les cours peuvent être différés; aucun flux continu ni taux de change automatique. Les coûts d’achat et les prix indisponibles sont conservés. Voir [les sources et limites](docs/market-data.md).
 
 ## Plateformes canadiennes
 

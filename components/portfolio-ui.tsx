@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState, type ReactNode } from 'react';
 import { ArrowUpRight, Hexagon, Landmark, Plus, Upload, Wallet } from 'lucide-react';
 import { usePortfolio } from './portfolio-provider';
+import { MarketRefresh } from './market-refresh';
 import { PositionEditor } from './position-editor';
 import { isCryptoProvider } from '../lib/providers';
 import { displayMoney, percent, totals } from '../lib/portfolio';
@@ -16,7 +17,7 @@ export function PageHeading({ title, subtitle, actions = true }: { title: string
 }
 export function PortfolioActions() {
   const [edit, setEdit] = useState(false);
-  return <><div className="actions"><Link className="button" href="/importations"><Upload />Importer un fichier</Link><button className="button primary" onClick={() => setEdit(true)}><Plus />Ajouter un placement</button></div>{edit && <PositionEditor onClose={() => setEdit(false)} />}</>;
+  return <><div className="actions"><MarketRefresh /><Link className="button" href="/importations"><Upload />Importer un fichier</Link><button className="button primary" onClick={() => setEdit(true)}><Plus />Ajouter un placement</button></div>{edit && <PositionEditor onClose={() => setEdit(false)} />}</>;
 }
 export function Metrics() {
   const { state, displayCurrency } = usePortfolio();

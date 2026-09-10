@@ -8,6 +8,7 @@ export type Position = {
   quantity: number; cost: number; price: number; currency: Currency;
   costCurrency?: Currency; valuationCurrency?: Currency; bookValue?: number;
   marketValue?: number; asOf?: string; priceUncertain?: boolean;
+  market?: { lookup: string; source: 'Yahoo Finance' | 'CoinGecko'; quotedAt: string; fetchedAt: string };
 };
 export type ImportRecord = { id: string; name: string; source: string; date: string; count: number; asOf?: string };
 export type Snapshot = { date: string; value: number; cost: number };
@@ -33,6 +34,7 @@ export function validPosition(p: Position) {
     && [p.costCurrency, p.valuationCurrency].every(c => c === undefined || ['CAD', 'USD'].includes(c))
     && ['quantity', 'cost', 'price'].every(k => Number.isFinite(p[k as keyof Position]) && Number(p[k as keyof Position]) >= 0 && Number(p[k as keyof Position]) <= 1e12)
     && p.quantity > 0 && [p.bookValue, p.marketValue].every(v => v === undefined || Number.isFinite(v) && v >= 0)
+    && (p.market === undefined || !!p.market && typeof p.market.lookup === 'string' && p.market.lookup.length > 0 && p.market.lookup.length <= 80 && ['Yahoo Finance', 'CoinGecko'].includes(p.market.source) && typeof p.market.quotedAt === 'string' && Number.isFinite(Date.parse(p.market.quotedAt)) && typeof p.market.fetchedAt === 'string' && Number.isFinite(Date.parse(p.market.fetchedAt)))
     && (!p.asOf || /^\d{4}-\d{2}-\d{2}$/.test(p.asOf));
 }
 export function validPortfolio(s: Portfolio): boolean {

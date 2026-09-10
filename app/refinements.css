@@ -134,3 +134,12 @@ a { text-decoration: none; }
   .provider-results { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .provider-results .source-card { padding: 14px; }
 }
+
+.market-intro { margin: 0 0 18px; }
+.market-table { max-height: 50vh; }
+.market-table td { vertical-align: top; white-space: normal; min-width: 115px; }
+.market-table td:first-child { min-width: 40px; }
+.market-table .field input { width: 145px; }
+.market-table .small { margin-top: 5px; line-height: 1.5; }
+.quote-date { margin-top: 5px; max-width: 190px; white-space: normal; line-height: 1.5; }
+.actions, .modal-footer { flex-wrap: wrap; }
