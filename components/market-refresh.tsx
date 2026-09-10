@@ -53,7 +53,7 @@ function MarketDialog({ onClose }: { onClose: () => void }) {
   function apply() {
     const next = applyMarketQuotes(state, updates);
     if (!next.updated) { setError('Aucun cours applicable : les positions ont changé ou les prix sont plus anciens que vos données. Relancez la récupération.'); return; }
-    if (commit(next.state, true)) { notify(next.updated + ' prix mis à jour.' + (next.skipped ? ' ' + next.skipped + ' positions inchangées.' : '')); onClose(); }
+    if (commit(next.state)) { notify(next.updated + ' prix mis à jour. Courbe actualisée.' + (next.skipped ? ' ' + next.skipped + ' positions inchangées.' : '')); onClose(); }
   }
   return <Modal title="Actualiser les cours" onClose={onClose} wide>
     <p className="form-note market-intro">Vérifiez les titres avant d’appliquer les prix. Le suffixe .TO suggère Toronto, .V la Bourse de croissance TSX et .CN la CSE. Pour une crypto, utilisez son identifiant CoinGecko (bitcoin, ethereum…).</p>

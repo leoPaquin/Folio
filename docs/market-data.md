@@ -31,3 +31,13 @@ Sources consultées le 10 septembre 2026 :
 - https://docs.coingecko.com/reference/simple-price
 
 Tests : node --experimental-strip-types scripts/check-market.mjs
+
+## Courbe du portefeuille
+
+L’application de cours enregistre immédiatement une valorisation horodatée et
+rafraîchit la courbe. Plusieurs points d’une même journée sont conservés; la vue
+1J couvre les dernières 24 heures. Un point isolé reste visible. Sans historique,
+les valeurs connues avant et après application sont enregistrées à cet instant,
+sans inventer de cours passés. Les anciennes sauvegardes avec des dates seules
+restent compatibles. Les 5 000 dernières valorisations sont conservées.
+Une récupération annulée, échouée ou sans cours applicable n’ajoute aucun point.

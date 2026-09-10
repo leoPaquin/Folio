@@ -11,7 +11,7 @@ export type Position = {
   market?: { lookup: string; source: 'Yahoo Finance' | 'CoinGecko'; quotedAt: string; fetchedAt: string };
 };
 export type ImportRecord = { id: string; name: string; source: string; date: string; count: number; asOf?: string };
-export type Snapshot = { date: string; value: number; cost: number };
+export type Snapshot = { date: string; capturedAt?: string; value: number; cost: number };
 export type Portfolio = { version: 2; accounts: Account[]; positions: Position[]; imports: ImportRecord[]; snapshots: Snapshot[]; usdCad: number };
 export const EMPTY_PORTFOLIO: Portfolio = { version: 2, accounts: [], positions: [], imports: [], snapshots: [], usdCad: 1 };
 export const COLORS: Record<AssetKind, string> = { FNB: '#42775a', Action: '#9caf8c', Crypto: '#a99ac4', Liquidités: '#d6c89b', Autre: '#a5afb1' };
@@ -43,11 +43,14 @@ export function validPortfolio(s: Portfolio): boolean {
   const ids = new Set(s.accounts.map(a => a.id));
   return ids.size === s.accounts.length && s.positions.every(p => validPosition(p) && ids.has(p.accountId)) && new Set(s.positions.map(positionKey)).size === s.positions.length
     && s.imports.every(i => typeof i.name === 'string' && typeof i.source === 'string' && Number.isFinite(i.count) && !Number.isNaN(Date.parse(i.date)))
-    && s.snapshots.every(i => /^\d{4}-\d{2}-\d{2}$/.test(i.date) && Number.isFinite(i.value) && Number.isFinite(i.cost));
+    && s.snapshots.every(i => /^\d{4}-\d{2}-\d{2}$/.test(i.date) && Number.isFinite(i.value) && Number.isFinite(i.cost) && (i.capturedAt === undefined || typeof i.capturedAt === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(i.capturedAt) && Number.isFinite(Date.parse(i.capturedAt)) && i.capturedAt.slice(0, 10) === i.date));
 }
-export function withSnapshot(state: Portfolio): Portfolio {
-  const date = new Date().toISOString().slice(0, 10);
-  return { ...state, snapshots: [...state.snapshots.filter(s => s.date !== date), { date, ...totals(state) }].slice(-730) };
+export function withSnapshot(state: Portfolio, now = new Date()): Portfolio {
+  const capturedAt = now.toISOString(), date = capturedAt.slice(0, 10);
+  const snapshot = { date, capturedAt, ...totals(state) };
+  const last = state.snapshots.at(-1);
+  if (last?.capturedAt === capturedAt && last.value === snapshot.value && last.cost === snapshot.cost) return state;
+  return { ...state, snapshots: [...state.snapshots, snapshot].slice(-5000) };
 }
 export function mergeImport(state: Portfolio, accounts: Account[], positions: Position[], replaceAccounts: boolean, rate?: number): Portfolio {
   const nextAccounts = [...state.accounts], mapping = new Map<string, string>();

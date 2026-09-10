@@ -1,3 +1,4 @@
+import { withSnapshot } from './portfolio';
 import type { Currency, Portfolio, Position } from './portfolio';
 
 export type QuoteRequest = { key: string; lookup: string; kind: 'Action' | 'FNB' | 'Crypto'; currency: Currency };
@@ -48,5 +49,10 @@ export function applyMarketQuotes(state: Portfolio, updates: { before: Position;
     return { ...p, price: item.quote.price, marketValue: undefined, asOf: day, priceUncertain: false,
       market: { lookup: item.quote.lookup, source: item.quote.source, quotedAt: item.quote.quotedAt, fetchedAt: item.quote.fetchedAt } };
   });
-  return { state: { ...state, positions }, updated, skipped: updates.length - updated };
+  if (!updated) return { state, updated, skipped: updates.length };
+  // Record the known before/after valuations at the actual refresh time when
+  // starting history. Do not backdate a baseline or reconstruct past prices.
+  const baseline = state.snapshots.length ? state : withSnapshot(state, new Date(now));
+  const next = withSnapshot({ ...baseline, positions }, new Date(now));
+  return { state: next, updated, skipped: updates.length - updated };
 }

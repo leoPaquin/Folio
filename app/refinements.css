@@ -143,3 +143,8 @@ a { text-decoration: none; }
 .market-table .small { margin-top: 5px; line-height: 1.5; }
 .quote-date { margin-top: 5px; max-width: 190px; white-space: normal; line-height: 1.5; }
 .actions, .modal-footer { flex-wrap: wrap; }
+
+.chart-latest { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin: 16px 0 6px; }
+.chart-latest strong { color: var(--green); font-size: 19px; font-variant-numeric: tabular-nums; }
+.chart-latest span { color: #849084; font-size: 10px; }
+.chart-section .segmented { flex-wrap: wrap; }
