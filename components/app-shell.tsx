@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { ArrowDownToLine, ChartNoAxesCombined, ChevronRight, Eye, EyeOff, LayoutDashboard, LogOut, Menu, Settings2, Wallet, X } from 'lucide-react';
 import { usePortfolio } from './portfolio-provider';
-import { PublicHome } from './public-home';
+import { createClient } from '../lib/supabase/client';
 
 const nav = [
   { path: '/portefeuille', name: 'Vue d’ensemble', Icon: LayoutDashboard },
@@ -15,16 +15,18 @@ const nav = [
 ];
 export function AppShell({ children }: { children: ReactNode }) {
   const path = usePathname();
-  const { state, ready, error, notice, hidden, setHidden, owner, displayCurrency, toggleCurrency } = usePortfolio();
+  const { state, ready, error, notice, hidden, setHidden, owner, displayCurrency, toggleCurrency, flushSaves, notify } = usePortfolio();
   const [menu, setMenu] = useState(false);
   const title = nav.find(n => n.path === path)?.name || (path === '/preferences' ? 'Préférences' : 'Mon espace');
-  const isLocal = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname);
   const profileName = owner?.name?.trim() || owner?.email?.split('@')[0] || 'Mon espace personnel';
   const profileInitials = owner?.name ? owner.name.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase() : owner?.email ? owner.email.slice(0, 2).toUpperCase() : 'MP';
-  if (ready && isLocal && !owner) return <PublicHome />;
-  function logout() {
-    if (isLocal) localStorage.removeItem('folio.local.session');
-    window.location.href = isLocal ? '/' : '/signout-with-chatgpt?return_to=%2F';
+  async function logout() {
+    if (!await flushSaves()) { notify('Exportez une sauvegarde JSON avant de quitter : la sauvegarde en ligne a échoué.'); return; }
+    try {
+      const { error: signOutError } = await createClient().auth.signOut({ scope: 'local' });
+      if (signOutError) throw signOutError;
+      window.location.assign('/');
+    } catch { notify('La déconnexion a échoué. Réessayez.'); }
   }
   return <div className={hidden ? 'privacy-blur' : ''}>
     {menu && <button className="mobile-scrim" aria-label="Fermer le menu" onClick={() => setMenu(false)} />}

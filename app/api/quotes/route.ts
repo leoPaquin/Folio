@@ -1,12 +1,13 @@
-import { headers } from 'next/headers';
+import { authenticatedClient } from '../../../lib/supabase/server';
 import { validQuoteRequest } from '../../../lib/market';
 import { getMarketQuotes } from '../../../lib/market-server';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
-  const requestHeaders = await headers();
-  if (!requestHeaders.get('oai-authenticated-user-id') && process.env.NODE_ENV === 'production') return Response.json({ error: 'Connexion requise.' }, { status: 401 });
+  const { supabase, user } = await authenticatedClient();
+  if (!supabase) return Response.json({ error: 'Supabase doit être configuré sur le serveur.' }, { status: 503 });
+  if (!user) return Response.json({ error: 'Connexion requise.' }, { status: 401 });
   try {
     const text = await request.text();
     if (text.length > 20_000) return Response.json({ error: 'Requête trop volumineuse.' }, { status: 413 });

@@ -1,36 +1,34 @@
 # Folio
 
-Application personnelle de suivi des investissements en francais, construite avec React, TypeScript et Vinext.
+Application de suivi des investissements au Canada, en français, avec Next.js, React, TypeScript et Supabase. Hébergement prévu sur Vercel.
 
-## Pages
+## Démarrage
 
-- `/` redirige vers les importations si le portefeuille est vide, sinon vers le portefeuille.
-- `/importations` : catalogue canadien, PDF Disnat, CSV de positions, restauration JSON, apercu et validation.
-- `/portefeuille` : synthese, repartition, comptes et historique reel.
-- `/placements` : recherche, filtres, tri, saisie et modification.
-- `/comptes` : ajout et suppression des comptes.
-- `/preferences` : conversion USD/CAD et sauvegardes.
+1. Installer Node.js 24 et exécuter `npm ci`.
+2. Copier `.env.example` vers `.env` si le fichier local n’existe pas déjà.
+3. Renseigner l’URL et la clé publique du projet Supabase.
+4. Exécuter [supabase/schema.sql](supabase/schema.sql) dans le SQL Editor de Supabase.
+5. Lancer `npm run dev`, puis ouvrir http://localhost:3000.
 
-## Developpement
+Le [guide Vercel et Supabase](docs/vercel-supabase.md) détaille la création du projet, la connexion, les variables d’environnement, le déploiement et la consultation de la base.
 
-`npm install`, puis `npm run dev`. Compilation : `npm run build`.
+`.env`, `.env.local` et les autres fichiers d’environnement réels sont ignorés par Git. Seul `.env.example`, sans valeurs de connexion, est versionné. Ne pas ajouter de relevés personnels au dépôt.
 
-## Donnees
+## Données
 
-Aucune donnee fictive. Les comptes et placements sont conserves exclusivement dans le navigateur sous `folio.portfolio.v2`. Les PDF sont lus localement avec PDF.js. Aucun releve utilisateur ne doit etre ajoute au depot. Exporter une sauvegarde JSON pour changer d'appareil.
+Les comptes et portefeuilles sont enregistrés dans PostgreSQL chez Supabase, par utilisateur authentifié. Les politiques RLS limitent chaque utilisateur à sa propre ligne. Les mots de passe sont gérés par Supabase Auth. Une clé de service privilégiée n’est pas nécessaire.
 
-L'import PDF Disnat controle les totaux de chaque compte et du portefeuille avant validation. Les valeurs comptables et marchandes du releve sont conservees, avec leurs devises. Un nouveau releve remplace les positions des comptes concernes, afin de retirer les positions vendues.
+Les PDF sont lus dans le navigateur ; les positions importées et confirmées sont ensuite sauvegardées dans Supabase. Une sauvegarde JSON permet de récupérer les données de l’ancienne version locale ou Cloudflare : aucune migration implicite entre profils.
 
-L'import CSV accepte des positions consolidees; les historiques de transactions Exodus ne sont pas pris en charge. Les actions et FNB peuvent être actualisés à la demande avec Yahoo Finance, et les cryptos avec CoinGecko. Un aperçu permet de vérifier les identifiants, devises et dates avant application. Les cours peuvent être différés; aucun flux continu ni taux de change automatique. Les coûts d’achat et les prix indisponibles sont conservés. Voir [les sources et limites](docs/market-data.md).
+L’import PDF Disnat contrôle les totaux et conserve les valeurs comptables et marchandes avec leurs devises. Le CSV accepte des positions consolidées, pas un historique de transactions. Le catalogue canadien et le choix libre d’établissement permettent le suivi manuel ; les institutions financières ne sont pas connectées automatiquement. Voir [les plateformes](docs/platforms.md).
 
-## Plateformes canadiennes
+Les actions et FNB peuvent être actualisés avec Yahoo Finance, et les cryptos avec CoinGecko. L’aperçu précède l’application ; les coûts d’achat restent conservés. La courbe reçoit un point lors de l’actualisation. Voir [les sources et limites](docs/market-data.md).
 
-Catalogue avec recherche, choix libre d’établissement et import CSV configurable. Les plateformes ajoutées sont disponibles pour le suivi manuel et les positions adaptées au modèle Folio; elles ne sont pas connectées automatiquement. Voir [la portée et les sources](docs/platforms.md).
+## Vérification
 
-Vérification : `node --experimental-strip-types scripts/check-platforms.mjs`.
-
-## Verification d'un releve local
-
-`node --experimental-strip-types scripts/check-statement.mjs CHEMIN_DU_PDF`
-
-La verification necessite Python et pypdf. Elle ne copie pas le document et n'affiche pas les details des positions.
+- `npm run build` : compilation de production et TypeScript.
+- `node --experimental-strip-types scripts/check-platforms.mjs` : import et catalogue.
+- `node --experimental-strip-types scripts/check-market.mjs` : cours et historique.
+- `node --experimental-strip-types scripts/check-portfolio-validation.mjs` : validation des données entrantes.
+- `node scripts/check-auth.mjs` : tests HTTP anonymes après compilation, sur le port local 3197.
+- `node --experimental-strip-types scripts/check-statement.mjs CHEMIN_DU_PDF` : relevé local, nécessite Python et pypdf.

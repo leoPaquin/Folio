@@ -30,20 +30,22 @@ export const positionKey = (p: Position) => [p.accountId, p.symbol.toUpperCase()
 export const accountKey = (a: Account) => [normalizeProvider(a.provider).toLowerCase(), a.reference || a.name.toLowerCase(), a.currency].join('|');
 export function validPosition(p: Position) {
   return p && ['id', 'accountId', 'symbol', 'name'].every(k => typeof p[k as keyof Position] === 'string' && String(p[k as keyof Position]).length > 0 && String(p[k as keyof Position]).length <= 200)
-    && Object.hasOwn(COLORS, p.kind) && ['CAD', 'USD'].includes(p.currency)
+    && typeof p.kind === 'string' && Object.hasOwn(COLORS, p.kind) && ['CAD', 'USD'].includes(p.currency)
     && [p.costCurrency, p.valuationCurrency].every(c => c === undefined || ['CAD', 'USD'].includes(c))
     && ['quantity', 'cost', 'price'].every(k => Number.isFinite(p[k as keyof Position]) && Number(p[k as keyof Position]) >= 0 && Number(p[k as keyof Position]) <= 1e12)
     && p.quantity > 0 && [p.bookValue, p.marketValue].every(v => v === undefined || Number.isFinite(v) && v >= 0)
     && (p.market === undefined || !!p.market && typeof p.market.lookup === 'string' && p.market.lookup.length > 0 && p.market.lookup.length <= 80 && ['Yahoo Finance', 'CoinGecko'].includes(p.market.source) && typeof p.market.quotedAt === 'string' && Number.isFinite(Date.parse(p.market.quotedAt)) && typeof p.market.fetchedAt === 'string' && Number.isFinite(Date.parse(p.market.fetchedAt)))
-    && (!p.asOf || /^\d{4}-\d{2}-\d{2}$/.test(p.asOf));
+    && (p.asOf === undefined || typeof p.asOf === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(p.asOf));
 }
-export function validPortfolio(s: Portfolio): boolean {
+export function validPortfolio(candidate: unknown): candidate is Portfolio {
+  if (!candidate || typeof candidate !== 'object') return false;
+  const s = candidate as Portfolio;
   if (!s || s.version !== 2 || !Array.isArray(s.accounts) || !Array.isArray(s.positions) || !Array.isArray(s.imports) || !Array.isArray(s.snapshots) || s.positions.length > 10000 || !Number.isFinite(s.usdCad) || s.usdCad <= 0 || s.usdCad > 100) return false;
   if (!s.accounts.every(a => a && ['id', 'name', 'provider'].every(k => typeof a[k as keyof Account] === 'string' && String(a[k as keyof Account]).length > 0 && String(a[k as keyof Account]).length <= 200) && ['CAD', 'USD'].includes(a.currency))) return false;
   const ids = new Set(s.accounts.map(a => a.id));
   return ids.size === s.accounts.length && s.positions.every(p => validPosition(p) && ids.has(p.accountId)) && new Set(s.positions.map(positionKey)).size === s.positions.length
-    && s.imports.every(i => typeof i.name === 'string' && typeof i.source === 'string' && Number.isFinite(i.count) && !Number.isNaN(Date.parse(i.date)))
-    && s.snapshots.every(i => /^\d{4}-\d{2}-\d{2}$/.test(i.date) && Number.isFinite(i.value) && Number.isFinite(i.cost) && (i.capturedAt === undefined || typeof i.capturedAt === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(i.capturedAt) && Number.isFinite(Date.parse(i.capturedAt)) && i.capturedAt.slice(0, 10) === i.date));
+    && s.imports.every(i => i && typeof i.name === 'string' && typeof i.source === 'string' && typeof i.date === 'string' && Number.isFinite(i.count) && !Number.isNaN(Date.parse(i.date)))
+    && s.snapshots.every(i => i && typeof i.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(i.date) && Number.isFinite(i.value) && Number.isFinite(i.cost) && (i.capturedAt === undefined || typeof i.capturedAt === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(i.capturedAt) && Number.isFinite(Date.parse(i.capturedAt)) && i.capturedAt.slice(0, 10) === i.date));
 }
 export function withSnapshot(state: Portfolio, now = new Date()): Portfolio {
   const capturedAt = now.toISOString(), date = capturedAt.slice(0, 10);
