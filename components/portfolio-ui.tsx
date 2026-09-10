@@ -5,10 +5,11 @@ import { useState, type ReactNode } from 'react';
 import { ArrowUpRight, Hexagon, Landmark, Plus, Upload, Wallet } from 'lucide-react';
 import { usePortfolio } from './portfolio-provider';
 import { PositionEditor } from './position-editor';
+import { isCryptoProvider } from '../lib/providers';
 import { displayMoney, percent, totals } from '../lib/portfolio';
 
 export function ProviderIcon({ name }: { name: string }) {
-  return <span className={'provider ' + (name === 'Exodus' ? 'exodus' : name === 'Disnat' ? '' : 'manual')}>{name === 'Exodus' ? <Wallet /> : name === 'Disnat' ? <Hexagon /> : <Landmark />}</span>;
+  return <span className={'provider ' + (isCryptoProvider(name) ? 'exodus' : name === 'Disnat' ? '' : 'manual')}>{isCryptoProvider(name) ? <Wallet /> : name === 'Disnat' ? <Hexagon /> : <Landmark />}</span>;
 }
 export function PageHeading({ title, subtitle, actions = true }: { title: string; subtitle: string; actions?: boolean | ReactNode }) {
   return <div className="page-heading"><div><h1>{title}</h1><p className="subtitle">{subtitle}</p></div>{actions === true ? <PortfolioActions /> : actions}</div>;

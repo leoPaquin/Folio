@@ -1,5 +1,8 @@
 'use client';
 
+import { ProviderField } from './provider-field';
+import { normalizeProvider } from '../lib/providers';
+
 import { useState, type FormEvent } from 'react';
 import { Check, Trash2 } from 'lucide-react';
 import { Modal } from './modal';
@@ -16,8 +19,9 @@ export function PositionEditor({ position, onClose }: { position?: Position; onC
     const accounts = [...state.accounts];
     let targetId = accountId;
     if (accountId === 'new') {
-      const name = String(fields.accountName).trim(), provider = String(fields.provider), currency = fields.currency as Currency;
-      const existing = accounts.find(a => a.name.toLowerCase() === name.toLowerCase() && a.provider === provider && a.currency === currency);
+      const name = String(fields.accountName).trim(), provider = normalizeProvider(String(fields.provider)), currency = fields.currency as Currency;
+      if (!name || !provider) { setError('Renseignez le compte et l’établissement.'); return; }
+      const existing = accounts.find(a => a.name.toLowerCase() === name.toLowerCase() && normalizeProvider(a.provider) === provider && a.currency === currency);
       targetId = existing?.id || uid();
       if (!existing) accounts.push({ id: targetId, name, provider, currency });
     }
@@ -38,7 +42,7 @@ export function PositionEditor({ position, onClose }: { position?: Position; onC
         <label className="field"><span>Nom du placement</span><input name="name" required maxLength={150} defaultValue={position?.name} /></label>
         <label className="field"><span>Catégorie</span><select name="kind" defaultValue={position?.kind || 'FNB'}>{Object.keys(COLORS).map(k => <option key={k}>{k}</option>)}</select></label>
         <label className="field"><span>Compte</span><select value={accountId} onChange={e => setAccountId(e.target.value)}>{state.accounts.map(a => <option key={a.id} value={a.id}>{a.provider} · {a.name}</option>)}<option value="new">Nouveau compte</option></select></label>
-        {accountId === 'new' && <><label className="field"><span>Établissement</span><select name="provider"><option>Disnat</option><option>Exodus</option><option>Manuel</option></select></label><label className="field"><span>Nom du compte</span><input name="accountName" placeholder="CELI, REER…" required maxLength={100} /></label></>}
+        {accountId === 'new' && <><ProviderField /><label className="field"><span>Nom du compte</span><input name="accountName" placeholder="CELI, REER…" required maxLength={100} /></label></>}
         <label className="field"><span>Quantité</span><input name="quantity" type="number" required min="0.00000001" max="1000000000000" step="any" defaultValue={position?.quantity} /></label>
         <label className="field"><span>Prix unitaire</span><input name="price" type="number" required min="0" max="1000000000000" step="any" defaultValue={position?.price} /></label>
         <label className="field"><span>Devise du prix</span><select name="currency" defaultValue={position?.currency || 'CAD'}><option>CAD</option><option>USD</option></select></label>

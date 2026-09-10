@@ -4,7 +4,15 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseDisnatPages, readDisnatPdf } from '../lib/disnat.ts';
-import { EMPTY_PORTFOLIO, mergeImport, totals, validPortfolio } from '../lib/portfolio.ts';
+import { registerHooks } from 'node:module';
+registerHooks({ resolve(specifier, context, nextResolve) {
+  try { return nextResolve(specifier, context); }
+  catch (error) {
+    if (error.code === 'ERR_MODULE_NOT_FOUND' && specifier.startsWith('.') && !/\.[a-z]+$/i.test(specifier)) return nextResolve(specifier + '.ts', context);
+    throw error;
+  }
+}});
+const { EMPTY_PORTFOLIO, mergeImport, totals, validPortfolio } = await import('../lib/portfolio.ts');
 
 const file = process.argv[2];
 if (!file) throw Error('Pass a local PDF path.');

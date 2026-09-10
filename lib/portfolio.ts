@@ -1,3 +1,5 @@
+import { normalizeProvider } from './providers';
+
 export type AssetKind = 'FNB' | 'Action' | 'Crypto' | 'Liquidités' | 'Autre';
 export type Currency = 'CAD' | 'USD';
 export type Account = { id: string; name: string; provider: string; currency: Currency; reference?: string };
@@ -24,7 +26,7 @@ export function totals(state: Portfolio, positions = state.positions) {
   return positions.reduce((a, p) => ({ value: a.value + positionValue(p, state.usdCad), cost: a.cost + positionCost(p, state.usdCad) }), { value: 0, cost: 0 });
 }
 export const positionKey = (p: Position) => [p.accountId, p.symbol.toUpperCase(), p.currency].join('|');
-export const accountKey = (a: Account) => [a.provider.toLowerCase(), a.reference || a.name.toLowerCase(), a.currency].join('|');
+export const accountKey = (a: Account) => [normalizeProvider(a.provider).toLowerCase(), a.reference || a.name.toLowerCase(), a.currency].join('|');
 export function validPosition(p: Position) {
   return p && ['id', 'accountId', 'symbol', 'name'].every(k => typeof p[k as keyof Position] === 'string' && String(p[k as keyof Position]).length > 0 && String(p[k as keyof Position]).length <= 200)
     && Object.hasOwn(COLORS, p.kind) && ['CAD', 'USD'].includes(p.currency)
@@ -50,7 +52,7 @@ export function mergeImport(state: Portfolio, accounts: Account[], positions: Po
   for (const incoming of accounts) {
     let existing = nextAccounts.find(a => accountKey(a) === accountKey(incoming));
     if (!existing) {
-      const candidates = nextAccounts.filter(a => a.provider.toLowerCase() === incoming.provider.toLowerCase() && a.name.toLowerCase() === incoming.name.toLowerCase() && a.currency === incoming.currency && (!a.reference || !incoming.reference));
+      const candidates = nextAccounts.filter(a => normalizeProvider(a.provider).toLowerCase() === normalizeProvider(incoming.provider).toLowerCase() && a.name.toLowerCase() === incoming.name.toLowerCase() && a.currency === incoming.currency && (!a.reference || !incoming.reference));
       if (candidates.length === 1) {
         existing = candidates[0];
         if (incoming.reference && !existing.reference) { existing = { ...existing, reference: incoming.reference }; nextAccounts[nextAccounts.findIndex(a => a.id === existing!.id)] = existing; }
