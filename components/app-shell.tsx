@@ -19,6 +19,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [menu, setMenu] = useState(false);
   const title = nav.find(n => n.path === path)?.name || (path === '/preferences' ? 'Préférences' : 'Mon espace');
   const isLocal = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  const profileName = owner?.name?.trim() || owner?.email?.split('@')[0] || 'Mon espace personnel';
+  const profileInitials = owner?.name ? owner.name.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase() : owner?.email ? owner.email.slice(0, 2).toUpperCase() : 'MP';
   if (ready && isLocal && !owner) return <PublicHome />;
   function logout() {
     if (isLocal) localStorage.removeItem('folio.local.session');
@@ -28,7 +30,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     {menu && <button className="mobile-scrim" aria-label="Fermer le menu" onClick={() => setMenu(false)} />}
     <aside className={'sidebar' + (menu ? ' open' : '')}>
       <Link className="brand" href="/" onClick={() => setMenu(false)}><span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>folio<span style={{ color: '#9eaf9d' }}>.</span></Link>
-      <div className="workspace"><div className="avatar">MP</div><div><strong>Mon espace personnel</strong><div className="muted" style={{ marginTop: 4, fontSize: 10 }}>Patrimoine & investissements</div></div></div>
+      <div className="workspace"><div className="avatar" aria-hidden="true">{profileInitials}</div><div><strong>Espace de {profileName}</strong><div className="muted" style={{ marginTop: 4, fontSize: 10 }}>{owner?.email || 'Patrimoine & investissements'}</div></div></div>
       <p className="nav-label">Espace investisseur</p>
       <nav className="nav" aria-label="Navigation principale">{nav.map(({ path: target, name, Icon }) => <Link key={target} href={target} className={path === target ? 'active' : ''} aria-current={path === target ? 'page' : undefined} onClick={() => setMenu(false)}><Icon />{name}{target === '/importations' && state.imports.length > 0 && <span className="count">{state.imports.length}</span>}</Link>)}</nav>
       <div className="sidebar-bottom"><Link className={'bottom-link' + (path === '/preferences' ? ' active' : '')} href="/preferences" onClick={() => setMenu(false)}><Settings2 />Préférences</Link></div>
